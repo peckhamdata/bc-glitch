@@ -7,6 +7,7 @@ var voronoi = new Voronoi();
 
 var num_v = 512
 var num_c = 20
+var curve_num_points = 2048
 
 lcg_sequence = function(seed, max, min, length) {
     max = max || 1;
@@ -25,7 +26,9 @@ lcg_sequence = function(seed, max, min, length) {
 }
 
 var nums = lcg_sequence(num_v, num_v, 0, num_v).slice(0, num_c).sort((a, b) => a - b);
-console.log(nums)
+var line_nums = lcg_sequence(num_v, num_v, 0, num_v);
+var offset_nums = lcg_sequence(num_v, 100, 0, num_v);
+
 // var sites = [];
 // var i = 0;
 // for (i = 0; i < num_v; i++) {
@@ -48,36 +51,60 @@ plotter.init(function() {
     var curve = new Bezier(nums[i], 0, 
                            num_v , num_v * 1.5,
                            num_v+nums[i], 0);
-    var curve_points = curve.getLUT(100)
+    var curve_points = curve.getLUT(curve_num_points)
     plotter.plot_points(curve_points, colour);        
     curves.push(curve)
   }
-  var k = 10
 
-  for (i=1; i < curves.length; i++) {
-    var curve_points = curves[i].getLUT(100)
-    var prev_curve_points = curves[i-1].getLUT(100)
-    console.log(curve_points[k], prev_curve_points[k])
-    var line = bresenham(curve_points[k].x, 
-                         curve_points[k].y,
-                         prev_curve_points[k].x, 
-                         prev_curve_points[k].y)
-    plotter.plot_points(line, colour);
-    k+=1;
-    // lines.push(line)
-  }
+  // Curves of Doom
+  curves_of_doom()
 
   plotter.write();
 
-  // var i = 2; 
-  // for (j=0; j < rows[i].length; j++) {
-  //   var line_2 = bresenham(rows[i][j][0].x, rows[i][j][0].y,
-  //                          rows[i][j][rows[i][j].length-1].x, 
-  //                          rows[i][j][rows[i][j].length-1].y)
-  //   var colour_2 = {red: 100, green: 0, blue: 0} 
-  //   plotter.plot_points(line_2, colour_2);
-  // }
-  // plotter.write();
+  function curves_of_doom() {
+    var rows = []
+    for (i=1; i < curves.length; i++) {
+      var lines = []
+      for (j=0; j < nums.length; j+=1) {
+        var k=Math.floor(line_nums[j]);
+        var offset=Math.floor(offset_nums[j]);
+        var curve_points = curves[i].getLUT(curve_num_points)
+        var prev_curve_points = curves[i-1].getLUT(curve_num_points)
+        var line = bresenham(curve_points[k].x, 
+                             curve_points[k].y,
+                             prev_curve_points[k+offset].x, 
+                             prev_curve_points[k+offset].y)
+        plotter.plot_points(line, colour);
+        lines.push(line)
+      }
+      rows.push(lines)
+    }
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //   diagram.edges.forEach(function(edge, i){
   //       var line = bresenham(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
