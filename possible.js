@@ -6,7 +6,7 @@ const Bezier = require('bezier-js');
 var voronoi = new Voronoi();
 
 var num_v = 512
-var num_c = 20
+var num_c = 16
 var curve_num_points = 1024
 
 lcg_sequence = function(seed, max, min, length) {
@@ -26,8 +26,12 @@ lcg_sequence = function(seed, max, min, length) {
 }
 
 var nums = lcg_sequence(num_v, num_v, 0, num_v).slice(0, num_c).sort((a, b) => a - b);
-var line_nums = lcg_sequence(num_v, curve_num_points / 2, 0, curve_num_points);
+var line_nums = lcg_sequence(num_v, curve_num_points / 2, 0, curve_num_points).slice(0, num_v).sort((a, b) => a - b);
 var offset_nums = lcg_sequence(num_v, curve_num_points / 2, 10, curve_num_points);
+
+var reds = lcg_sequence(num_v, 0, 255, num_v)
+var greens = lcg_sequence(num_c, 0, 255, num_v)
+var blues = lcg_sequence(curve_num_points, 0, 255, num_v)
 
 // var sites = [];
 // var i = 0;
@@ -49,7 +53,7 @@ plotter.init(function() {
   var curves = []
   for (i=0; i < num_c; i++) {
     var curve = new Bezier(nums[i], 0, 
-                           num_v , num_v * 1.5,
+                           num_v , num_v * 2,
                            num_v+nums[i], 0);
     var curve_points = curve.getLUT(curve_num_points)
     plotter.plot_points(curve_points, colour);        
@@ -57,8 +61,11 @@ plotter.init(function() {
   }
 
   // Curves of Doom
+  var cols = []
+
   lines_of_doom()
   // curves_of_doom()
+  fill()
 
   plotter.write();
 
@@ -83,7 +90,6 @@ plotter.init(function() {
   }
 
   function lines_of_doom() {
-    var rows = []
     for (i=1; i < curves.length; i++) {
       var lines = []
       for (j=0; j < curve_num_points - 100; j+=50) {
@@ -98,11 +104,99 @@ plotter.init(function() {
         plotter.plot_points(line, colour);
         lines.push(line)
       }
-      rows.push(lines)
+      cols.push(lines)
     }
+  }
 
+  function fill() {
+    var r = 0
+    var colour_index = 0;
+    for (r=1; r < cols.length; r++) {
+      var col = cols[r];
+      var l = 0;
+      for (l=0; l < col.length; l++) {
+        var line = col[l]
+
+          // For each point in the line
+          // 
+                colour_index = (r * 19) + l 
+                var colour = {red: reds[colour_index], 
+                              green: greens[colour_index],
+                              blue: blues[colour_index]} 
+                plotter.plot_points(line, colour);
+                plotter.img_path = colour_index + '.png'
+                plotter.write()
+
+
+        // line.forEach(function(point) {
+        //       // console.log(point)
+
+        //       var foo = curves[l-1].getLUT(curve_num_points).find(function(e) {
+        //           // console.log(Math.floor(point.y), Math.floor(e.y))
+        //           if (Math.floor(point.y) === Math.floor(e.y)) {
+        //             return true
+        //           } else {
+        //             return false
+        //           }
+        //       })
+        //       if (typeof foo !== 'undefined') {
+        //         colour_index = (r * num_c) + l 
+        //         var colour = {red: reds[colour_index], 
+        //                       green: greens[colour_index],
+        //                       blue: blues[colour_index]} 
+        //         var line = bresenham(foo.x, 
+        //                              foo.y,
+        //                              point.x, 
+        //                              point.y)
+        //         plotter.plot_points(line, colour);
+        //         plotter.img_path = colour_index + '.png'
+        //         plotter.write()
+
+        //         } 
+        //   })
+
+
+      }
+    }
   }
 })
+      // For each Y in line
+      // Get corresponding Y in line i=1
+      // Draw line from corresponding X to X in line
+      // for (i=1; i < 2; i++) {
+      //   console.log(row)
+        // row.forEach(function(point) {
+        //       // console.log(point)
+
+        //       var foo = curves[i-1].getLUT(curve_num_points).find(function(e) {
+        //           // console.log(Math.floor(point.y), Math.floor(e.y))
+        //           if (Math.floor(point.y) === Math.floor(e.y)) {
+        //             return true
+        //           } else {
+        //             return false
+        //           }
+        //       })
+        //       if (typeof foo !== 'undefined') {
+        //         colour_index = (v * num_c) + i 
+        //         var colour = {red: reds[colour_index], 
+        //                       green: greens[colour_index],
+        //                       blue: blues[colour_index]} 
+        //         var line = bresenham(foo.x, 
+        //                              foo.y,
+        //                              point.x, 
+        //                              point.y)
+        //         plotter.plot_points(line, colour);
+        //         plotter.img_path = colour_index + '.png'
+        //         plotter.write()
+
+        //         } else {
+        //           console.log(foo)
+        //         }
+        //   })
+//       }
+//     }
+//   }
+// })
 
 
 
