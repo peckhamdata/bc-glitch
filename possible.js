@@ -112,10 +112,10 @@ plotter.init(function() {
     var c = 0
     var counter = 0;
     var colour_index = 0;
-    for (c=11; c < 12; c++) {
+    for (c=1; c < cols.length; c++) {
       var col = cols[c];
       var l = 0;
-      for (l=1; l < 11; l++) {
+      for (l=1; l < 10; l++) {
 
         var line = col[l]
         var prev_line = col[l-1]
@@ -130,6 +130,16 @@ plotter.init(function() {
             }
           })
           console.log("match", match, "prev", prev_line[p])
+          if (typeof match === 'undefined') {
+            // Look for a match in the next curve
+            var match = curves[c-1].getLUT(curve_num_points).find(function(e) {
+                  if (Math.floor(prev_line[p].y) === Math.floor(e.y)) {
+                    return true
+                  } else {
+                    return false
+                  }
+            })
+          }
           if (typeof match !== 'undefined') {
             var colour = {red: reds[colour_index], 
                                green: greens[colour_index],
@@ -140,6 +150,7 @@ plotter.init(function() {
                                           prev_line[p].y), colour);
           }
         }
+          colour_index++
 
       }
     }
