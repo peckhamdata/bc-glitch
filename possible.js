@@ -110,59 +110,41 @@ plotter.init(function() {
 
   function fill() {
     var c = 0
+    var counter = 0;
     var colour_index = 0;
-    for (c=1; c < cols.length; c++) {
+    for (c=11; c < 12; c++) {
       var col = cols[c];
       var l = 0;
-      for (l=0; l < col.length; l++) {
+      for (l=1; l < 11; l++) {
+
         var line = col[l]
+        var prev_line = col[l-1]
 
-          // For each Y point in the line
-
-          var p = 0
-          for (p=0; p < line.length; p++) {
-            var y = (Math.floor(line[p].y))
-
-          // Get the corresponding X for curve[c-1]
-
-            var c0 = curves[c-1].getLUT(curve_num_points).find(function(e) {
-              if (y === Math.floor(e.y)) {
-                return true
-              } else {
-                return false
-              }
-            })
-
-          // And the corresponding X for curve[c]
-
-            var c1 = curves[c].getLUT(curve_num_points).find(function(e) {
-              if (y === Math.floor(e.y)) {
-                return true
-              } else {
-                return false
-              }
-            })
-            if (typeof c0 !== 'undefined' &&
-                typeof c1 !== 'undefined' ) {
-
-                // Draw a line
-                colour_index = (c * 19) + l 
-                var colour = {red: reds[colour_index], 
-                              green: greens[colour_index],
-                              blue: blues[colour_index]} 
-                plotter.plot_points(bresenham(c0.x, 
-                                              y,
-                                              c1.x, 
-                                              y), colour);
-                // plotter.img_path = colour_index + '.png'
-                // plotter.write()
-
+        var p = 0;
+        for(p=0; p < prev_line.length; p++) {
+          var match = line.find(function(e) {
+            if (Math.floor(prev_line[p].y) === Math.floor(e.y)) {
+              return true
+            } else {
+              return false
             }
+          })
+          console.log("match", match, "prev", prev_line[p])
+          if (typeof match !== 'undefined') {
+            var colour = {red: reds[colour_index], 
+                               green: greens[colour_index],
+                               blue: blues[colour_index]} 
+            plotter.plot_points(bresenham(match.x, 
+                                          match.y,
+                                          prev_line[p].x, 
+                                          prev_line[p].y), colour);
           }
         }
+
       }
     }
-  })
+  } 
+})
 
           // Draw a line
                 // colour_index = (c * 19) + l 
