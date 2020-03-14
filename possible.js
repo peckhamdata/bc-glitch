@@ -109,23 +109,69 @@ plotter.init(function() {
   }
 
   function fill() {
-    var r = 0
+    var c = 0
     var colour_index = 0;
-    for (r=1; r < cols.length; r++) {
-      var col = cols[r];
+    for (c=1; c < cols.length; c++) {
+      var col = cols[c];
       var l = 0;
       for (l=0; l < col.length; l++) {
         var line = col[l]
 
-          // For each point in the line
-          // 
-                colour_index = (r * 19) + l 
+          // For each Y point in the line
+
+          var p = 0
+          for (p=0; p < line.length; p++) {
+            var y = (Math.floor(line[p].y))
+
+          // Get the corresponding X for curve[c-1]
+
+            var c0 = curves[c-1].getLUT(curve_num_points).find(function(e) {
+              if (y === Math.floor(e.y)) {
+                return true
+              } else {
+                return false
+              }
+            })
+
+          // And the corresponding X for curve[c]
+
+            var c1 = curves[c].getLUT(curve_num_points).find(function(e) {
+              if (y === Math.floor(e.y)) {
+                return true
+              } else {
+                return false
+              }
+            })
+            if (typeof c0 !== 'undefined' &&
+                typeof c1 !== 'undefined' ) {
+
+                // Draw a line
+                colour_index = (c * 19) + l 
                 var colour = {red: reds[colour_index], 
                               green: greens[colour_index],
                               blue: blues[colour_index]} 
-                plotter.plot_points(line, colour);
-                plotter.img_path = colour_index + '.png'
-                plotter.write()
+                plotter.plot_points(bresenham(c0.x, 
+                                              y,
+                                              c1.x, 
+                                              y), colour);
+                // plotter.img_path = colour_index + '.png'
+                // plotter.write()
+
+            }
+          }
+        }
+      }
+    }
+  })
+
+          // Draw a line
+                // colour_index = (c * 19) + l 
+                // var colour = {red: reds[colour_index], 
+                //               green: greens[colour_index],
+                //               blue: blues[colour_index]} 
+                // plotter.plot_points(line, colour);
+                // plotter.img_path = colour_index + '.png'
+                // plotter.write()
 
 
         // line.forEach(function(point) {
@@ -156,10 +202,8 @@ plotter.init(function() {
         //   })
 
 
-      }
-    }
-  }
-})
+      
+    
       // For each Y in line
       // Get corresponding Y in line i=1
       // Draw line from corresponding X to X in line
