@@ -33,7 +33,7 @@ var reds = lcg_sequence(num_v, 0, 255, num_v)
 var greens = lcg_sequence(num_c, 0, 255, num_v)
 var blues = lcg_sequence(curve_num_points, 0, 255, num_v)
 
-var plotter = new hp.JimpPlotter('./demo.png', num_v * 2);
+var plotter = new hp.JimpPlotter('./demo.png', num_v * 2, num_v * 2);
 var prev_curve_points 
 var sid = 0
 
@@ -59,12 +59,13 @@ plotter.init(function() {
                   junctions: []})
   }
 
+  var explored = []
+
   var cols = []
 
   lines_of_doom()
   across()
-
-  render(streets)
+  explore(streets, 1)
   plotter.write();
 
   function lines_of_doom() {
@@ -77,12 +78,15 @@ plotter.init(function() {
         var prev_curve_points = streets[i-1].geometry.getLUT(curve_num_points)
         var street = {id: street_id(),
                       type: 'bresenham',
-                      junctions: [], // Needs to join to the previous street
+                      junctions: [{id: streets[i].id, address: k},
+                                  {id: streets[i-1].id, address: k+offset}],
                       geometry: {start: {x: curve_points[k].x,
                                          y: curve_points[k].y},
                                  end:   {x: prev_curve_points[k+offset].x,
                                          y: prev_curve_points[k+offset].y}}}
+        // Join to existing curve streets
         streets[i].junctions.push({id: street.id, address: k})
+        streets[i-1].junctions.push({id: street.id, address: k+offset})
         streets.push(street)
         var line = bresenham(street.geometry.start.x, 
                              street.geometry.start.y,
@@ -109,7 +113,8 @@ plotter.init(function() {
         //               blue: blues[colour_index]} 
        var street = {id: street_id(),
                     type: 'bresenham',
-                    junctions: [], // Needs to join to the previous street
+                    junctions: [{id: col_p[l].id, address: 0}, 
+                                {id: col[l].id, address: -1}], 
                     geometry: {start: {x: col_p[l].geometry.start.x,
                                        y: col_p[l].geometry.start.y},
                                end:   {x: col[l].geometry.start.x,
@@ -120,7 +125,8 @@ plotter.init(function() {
       var final = col_p[l-1].length
        var final_street = {id: street_id(),
                     type: 'bresenham',
-                    junctions: [], // Needs to join to the previous street
+                    junctions: [{id: col_p[l-1].id, address: 0}, 
+                                {id: col[l-1].id, address: -1}], 
                     geometry: {start: {x: col_p[l-1].geometry.end.x,
                                        y: col_p[l-1].geometry.end.y},
                                end:   {x: col[l-1].geometry.end.x,
@@ -130,20 +136,40 @@ plotter.init(function() {
     }
   } 
 
-function render(streets) {
-  streets.forEach(function(street) {
+function explore(streets, street_id) {
+  if (explored.includes(street_id)) {
+    return
+  }
+  var match = streets.find(function(s) {
+    if (s.id == street_id) {
+      return true
+    } else {
+      return false
+    }
+  })
+    if (typeof match !== 'undefined') {
+      render(match)
+      explored.push(match.id)
+      match.junctions.forEach(junction => explore(streets, junction.id))
+    }
+}
+
+function render(street) {
     var points
     if (street.type === 'bezier') {
       points = street.geometry.getLUT(curve_num_points * 2)
     } else {
+      console.log('street', street)
       points = bresenham(street.geometry.start.x,
                          street.geometry.start.y,
                          street.geometry.end.x,
                          street.geometry.end.y)
     }
     plotter.plot_points(points, colour);        
+}
 
-})
+function render_all(streets) {
+  streets.forEach(street => render(street))
 }
 
 })

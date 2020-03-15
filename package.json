@@ -8,6 +8,7 @@
     "bresenham": "^0.0.4",
     "fibonacci": "^1.6.7",
     "harry-plotter": "file:../harry-plotter",
+    "jimp": "^0.9.5",
     "voronoi": "^1.0.0"
   },
   "devDependencies": {},
