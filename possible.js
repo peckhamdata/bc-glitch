@@ -119,7 +119,8 @@ plotter.init(function() {
                                        y: col_p[l].geometry.start.y},
                                end:   {x: col[l].geometry.start.x,
                                        y: col[l].geometry.start.y}}}
-
+       col_p[l].junctions.push({id: street.id, address: 0})
+       col[l].junctions.push({id: street.id, address: 0})
        streets.push(street)
       }
       var final = col_p[l-1].length
@@ -132,6 +133,8 @@ plotter.init(function() {
                                end:   {x: col[l-1].geometry.end.x,
                                        y: col[l-1].geometry.end.y}}}
        streets.push(final_street)
+       col_p[l-1].junctions.push({id: final_street.id, address: -1})
+       col[l-1].junctions.push({id: final_street.id, address: -1})
 
     }
   } 
