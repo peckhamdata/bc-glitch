@@ -90,7 +90,6 @@ plotter.init(function() {
   var cols = []
 
   lines_of_doom()
-  // curves_of_doom()
   fill()
 
   var filename = ('0000'+ j).slice(-4);
@@ -113,26 +112,6 @@ function circle(radius) {
   var rgb = lcg_sequence(img_size-i,0, 1, 3)
   var colours = {red: rgb[0], green: rgb[1], blue: rgb[2]} 
   return points
-}
-
-function curves_of_doom() {
-  for (i=2; i < curves.length; i++) {
-    var lines = []
-    for (j=0; j < line_nums.length; j+=1) {
-      var k=Math.floor(line_nums[j] * 4);
-      var offset=Math.floor(offset_nums[j] * 4);
-      var curve_points = curves[i].getLUT(curve_num_points)
-      var prev_curve_points = curves[i-2].getLUT(curve_num_points)
-      var curve = new Bezier(curve_points[k].x, 
-                             curve_points[k].y,
-                             prev_curve_points[k+Math.floor(k/2)].x, 
-                             prev_curve_points[k+Math.floor(k/2)].y,
-                             prev_curve_points[k+offset].x, 
-                             prev_curve_points[k+offset].y)
-      plotter.plot_points(curve.getLUT(100), colour);
-    }
-
-  }
 }
 
 function lines_of_doom() {
@@ -198,7 +177,6 @@ function lines_of_doom() {
           }
         }
           colour_index++
-
       }
     }
   } 
