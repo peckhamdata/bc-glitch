@@ -5,6 +5,7 @@ const Bezier = require('bezier-js');
 
 var voronoi = new Voronoi();
 
+var img_size = 1024
 var num_v = 512
 var num_c = 16
 var curve_num_points = 1024
@@ -29,9 +30,9 @@ var nums = lcg_sequence(num_v, num_v, 0, num_v).slice(0, num_c).sort((a, b) => a
 var line_nums = lcg_sequence(num_v, curve_num_points / 2, 0, curve_num_points).slice(0, num_v).sort((a, b) => a - b);
 var offset_nums = lcg_sequence(num_v, curve_num_points / 2, 10, curve_num_points);
 
-var reds = lcg_sequence(num_v, 0, 255, num_v)
-var greens = lcg_sequence(num_c, 0, 255, num_v)
-var blues = lcg_sequence(curve_num_points, 0, 255, num_v)
+var reds = lcg_sequence(num_v, 0, 255, num_v * 10)
+var greens = lcg_sequence(num_c, 0, 255, num_v * 10)
+var blues = lcg_sequence(curve_num_points, 0, 255, num_v * 10)
 
 var plotter = new hp.JimpPlotter('./demo.png', num_v * 2, num_v * 2);
 var prev_curve_points 
@@ -44,6 +45,16 @@ function street_id() {
 
 plotter.init(function() {
 
+  var circle_points = circle(img_size / 2)
+  var inner_circle = circle((img_size / 2) - 128)
+  var circle_offset = Math.floor(circle_points.length / 8)
+  var inner_circle_length = inner_circle.length
+  circle_points.push(...circle_points)
+  circle_points.push(...circle_points)
+  circle_points.push(...circle_points)
+  inner_circle.push(...inner_circle)
+  inner_circle.push(...inner_circle)
+  inner_circle.push(...inner_circle)
   var curves = []
 
   var i = 0
@@ -51,9 +62,17 @@ plotter.init(function() {
   var colour = {red: 0, green: 100, blue: 0} 
   var streets = []
   for (i=0; i < num_c; i+=1) {
-    var curve = new Bezier(nums[i], 0, 
-                           num_v , num_v * 2,
-                           num_v+nums[i], 0);
+    var here = Math.floor(nums[i])
+    var there = here + Math.floor(inner_circle_length / 2)
+    var curve = new Bezier(circle_points[here].x,
+                           circle_points[here].y, 
+                           inner_circle[there].x, inner_circle[there].y,
+                           circle_points[here+circle_offset].x,
+                           circle_points[here+circle_offset].y);
+
+    // var curve = new Bezier(nums[i], 0, 
+    //                        num_v+100, num_v * 3.8,
+    //                        num_v+100+nums[i], 0);
     streets.push({id: street_id(),
                   type: 'bezier',
                   geometry: curve,
@@ -75,7 +94,7 @@ plotter.init(function() {
         var junction_points = match.map(function(num) {
           return {x: Math.floor(num/1000), y:num % 1000}
         })
-        console.log(i, j, junction_points.length)
+        // console.log(i, j, junction_points.length)
         all_points.push(junction_points)
       }
     }
@@ -85,26 +104,39 @@ plotter.init(function() {
   var filename_id = 0
   var cols = []
 
-  // lines_of_doom()
-  // across()
+  lines_of_doom()
+  across()
   render_all(streets)
 
   all_points.forEach(function(point, x) {
       colour = {red: reds[x], green: greens[x], blue: blues[x]}
       plotter.plot_points(point, colour)
-      // write(x)      
-      // console.log(x)
     })
 
   plotter.write();
 
 
-  function write(id) {
+  function write() {
     var filename = ('0000'+ filename_id).slice(-4);
     plotter.img_path = filename + '.png'
     plotter.write();
     filename_id++
   }
+
+  function circle(radius) {
+    var pointAngleInRadians = 0;
+    var points = [];
+    for (pointAngleInRadians = 0; 
+         pointAngleInRadians <= 7; 
+         pointAngleInRadians+=(Math.PI/360)) {
+      var x = Math.cos(pointAngleInRadians) * radius;
+      var y = Math.sin(pointAngleInRadians) * radius;
+      points.push({x: x + (img_size / 2), y: y + (img_size / 2)})
+    }
+    var rgb = lcg_sequence(img_size-i,0, 1, 3)
+    var colours = {red: rgb[0], green: rgb[1], blue: rgb[2]} 
+    return points
+}
 
   function lines_of_doom() {
     for (i=1; i < num_c; i++) {
@@ -115,12 +147,13 @@ plotter.init(function() {
         var curve_points = streets[i].geometry.getLUT(curve_num_points)
         var prev_curve_points = streets[i-1].geometry.getLUT(curve_num_points)
         // ***********************************************************
+        //
         // If a street this one connects to has a junction at the same
         // address then add it to this street too.
         var street = {id: street_id(),
                       type: 'bresenham',
-                      junctions: [{id: streets[i].id, address: k},
-                                  {id: streets[i-1].id, address: k+offset}],
+                      junctions: [{id: streets[i].id, address: 0},
+                                  {id: streets[i-1].id, address: -1}],
                       geometry: {start: {x: curve_points[k].x,
                                          y: curve_points[k].y},
                                  end:   {x: prev_curve_points[k+offset].x,
@@ -133,6 +166,25 @@ plotter.init(function() {
                              street.geometry.start.y,
                              street.geometry.end.x, 
                              street.geometry.end.y)
+        // Look for junctions with existing curves
+
+        var line_points = line.map(function(point) {
+          return Math.floor(point.x) * 1000 + Math.floor(point.y)
+        })
+
+        // Go through each of the curves
+        var cj
+        for (cj=0; cj < num_c; cj++) {
+          var match = curves[cj].filter(function (e) {
+            return line_points.includes(e);
+          });
+          match.forEach(function(point) {
+            street.junctions.push({id: cj, address:line_points.indexOf(point)})
+            streets[cj].junctions.push({id: street.id, address:curves[cj].indexOf(point)})
+          })
+        }
+
+
         lines.push(street)
       }
       cols.push(lines)
@@ -208,12 +260,45 @@ function render(street) {
                          street.geometry.end.x,
                          street.geometry.end.y)
     }
+    var colour_index = street.id
+    var colour = {red: reds[colour_index], 
+                  green: greens[colour_index],
+                  blue: blues[colour_index]} 
+
     plotter.plot_points(points, colour);
-    // write(street.id)        
+}
+
+function render_junctions(street) {
+    // Render junctions
+    var points
+    if (street.type === 'bezier') {
+      points = street.geometry.getLUT(curve_num_points * 2)
+    } else {
+      points = bresenham(street.geometry.start.x,
+                         street.geometry.start.y,
+                         street.geometry.end.x,
+                         street.geometry.end.y)
+    }
+
+    street.junctions.forEach(function(junction, x) {
+      var address = junction.address
+      if (address == -1) {
+        address = points.length-1
+      }
+      var colour = {red: 100, green: 0, blue: 0}  
+      var point = points[address]
+      if (typeof point !== 'undefined') {
+        plotter.plot_points([point], colour);
+      } else {
+        console.log(street.id, street.type, address, points.length)
+      }
+    })
+
 }
 
 function render_all(streets) {
   streets.forEach(street => render(street))
+  streets.forEach(street => render_junctions(street))
 }
 
 })
