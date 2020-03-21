@@ -39,6 +39,7 @@ plotter.init(function() {
 
   var i = 0
   var j = 0
+
   var clear = []
   for(i=0; i < img_size; i++) {
     for(j=0; j< img_size; j++) {
@@ -49,15 +50,28 @@ plotter.init(function() {
   for (j=0; j < rotation; j++) {
 
     var curves = bez()
-    var cols = []
-
-    lines_of_doom()
-    fill()
+    var cols = lines_of_doom()
+    fill(cols)
 
     var filename = ('0000'+ j).slice(-4);
     plotter.img_path = filename + '.png'
     plotter.write();
     plotter.plot_points(clear, {red: 0, green: 0, blue: 0})
+  }
+
+  function circle(radius) {
+    var pointAngleInRadians = 0;
+    var points = [];
+    for (pointAngleInRadians = 0; 
+         pointAngleInRadians <= 7; 
+         pointAngleInRadians+=(Math.PI/360)) {
+      var x = Math.cos(pointAngleInRadians) * radius;
+      var y = Math.sin(pointAngleInRadians) * radius;
+      points.push({x: x + (img_size / 2), y: y + (img_size / 2)})
+    }
+    var rgb = lcg_sequence(img_size-i,0, 1, 3)
+    var colours = {red: rgb[0], green: rgb[1], blue: rgb[2]} 
+    return points
   }
 
   function bez() {
@@ -99,22 +113,8 @@ plotter.init(function() {
     return curves
   }
 
-  function circle(radius) {
-    var pointAngleInRadians = 0;
-    var points = [];
-    for (pointAngleInRadians = 0; 
-         pointAngleInRadians <= 7; 
-         pointAngleInRadians+=(Math.PI/360)) {
-      var x = Math.cos(pointAngleInRadians) * radius;
-      var y = Math.sin(pointAngleInRadians) * radius;
-      points.push({x: x + (img_size / 2), y: y + (img_size / 2)})
-    }
-    var rgb = lcg_sequence(img_size-i,0, 1, 3)
-    var colours = {red: rgb[0], green: rgb[1], blue: rgb[2]} 
-    return points
-  }
-
   function lines_of_doom() {
+    var cols = []
     var colour = {red: reds[1], 
                 green: greens[1],
                 blue: blues[1]} 
@@ -137,9 +137,10 @@ plotter.init(function() {
       }
       cols.push(lines)
     }
+    return cols
   }
 
-  function fill() {
+  function fill(cols) {
     var c = 0    
     var counter = 0;
     var colour_index = 0;
