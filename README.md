@@ -1,16 +1,23 @@
-# bc-map
+# bc-glitch
 
-Map of [Bezier City](beziercity.com)
+![](assets/example.png)
 
-And messy glitch art
+Messy glitch art from Bezier City
 
-For the glitch art
+Dependencies: 
+
+* [node.js](https://nodejs.org)
+* [ffmpeg](https://www.ffmpeg.org/) - optional 
+
+Install with `npm i`
+
+This makes a bunch of png frames:
 
 ```
-node hmm.js
+node glitch.js
 ```
 
-then
+Which you can then animate with `ffmpeg` (Not supplied)
 
 ```
 ffmpeg -r 50 -i %04d.png -c:v libx264 -vf fps=25 -pix_fmt yuv420p out.mp4

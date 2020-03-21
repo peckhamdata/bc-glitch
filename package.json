@@ -1,8 +1,8 @@
 {
-  "name": "bc-map",
-  "version": "0.0.1",
-  "description": "Bezier City Map",
-  "main": "hmm.js",
+  "name": "bc-glitch",
+  "version": "0.0.2",
+  "description": "Messy Glitch Art from Bezier City",
+  "main": "glitch.js",
   "dependencies": {
     "bezier-js": "^2.5.1",
     "bresenham": "^0.0.4",
