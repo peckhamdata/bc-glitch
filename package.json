@@ -2,12 +2,12 @@
   "name": "bc-map",
   "version": "0.0.1",
   "description": "Bezier City Map",
-  "main": "foo.js",
+  "main": "hmm.js",
   "dependencies": {
     "bezier-js": "^2.5.1",
     "bresenham": "^0.0.4",
     "fibonacci": "^1.6.7",
-    "harry-plotter": "file:../harry-plotter",
+    "harry-plotter": "0.0.2",
     "jimp": "^0.9.5",
     "voronoi": "^1.0.0"
   },

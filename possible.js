@@ -46,6 +46,7 @@ function street_id() {
 plotter.init(function() {
 
   var circle_points = circle(img_size / 2)
+  console.log(circle_points.length)
   var inner_circle = circle((img_size / 2) - 128)
   var circle_offset = Math.floor(circle_points.length / 8)
   var inner_circle_length = inner_circle.length
